@@ -3,10 +3,11 @@ import { fmtTime } from "../lib/format";
 
 const STEPS = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800];
 
-export function niceTicks(duration: number, maxTicks = 8): number[] {
+/** Tick positions in [0, duration], on round values of recording time (offset + t). */
+export function niceTicks(duration: number, maxTicks = 8, offset = 0): number[] {
   const step = STEPS.find((s) => duration / s <= maxTicks) ?? 3600;
   const ticks: number[] = [];
-  for (let t = 0; t <= duration + 1e-6; t += step) ticks.push(t);
+  for (let t = Math.ceil(offset / step) * step - offset; t <= duration + 1e-6; t += step) ticks.push(t);
   return ticks;
 }
 
@@ -23,17 +24,17 @@ function useNarrow() {
   return narrow;
 }
 
-export default function TimeAxis({ duration }: { duration: number }) {
+export default function TimeAxis({ duration, offset = 0 }: { duration: number; offset?: number }) {
   const narrow = useNarrow();
   if (!(duration > 0)) return null;
   return (
     <div className="relative h-5 text-[11px] text-ink-3 tnum select-none" aria-hidden>
-      {niceTicks(duration, narrow ? 3 : 8).map((t) => {
+      {niceTicks(duration, narrow ? 3 : 8, offset).map((t) => {
         const pct = (t / duration) * 100;
         const align = pct > 96 ? "-translate-x-full" : pct < 2 ? "" : "-translate-x-1/2";
         return (
           <span key={t} className={`absolute top-1 ${align}`} style={{ left: `${pct}%` }}>
-            {fmtTime(t, 0)}
+            {fmtTime(offset + t, 0)}
           </span>
         );
       })}

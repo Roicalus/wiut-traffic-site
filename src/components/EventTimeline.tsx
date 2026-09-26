@@ -12,10 +12,15 @@ interface Props {
   compact?: boolean;
   /** Read-only rendering (no buttons), for use inside a link card. */
   static?: boolean;
+  /** Show only [offset, offset + duration] of the recording; labels stay in recording time. */
+  offset?: number;
 }
 
 /** One lane per class present, bars positioned by time. Click a bar to jump to its start. */
-export default function EventTimeline({ events, duration, time, onSeek, hidden, compact, static: readOnly }: Props) {
+export default function EventTimeline({ events: all, duration, time, onSeek, hidden, compact, static: readOnly, offset = 0 }: Props) {
+  const events: Event[] = offset
+    ? all.filter((e) => e[1] > offset && e[0] < offset + duration).map((e) => [Math.max(0, e[0] - offset), Math.min(duration, e[1] - offset), e[2]])
+    : all;
   const labels = sortByClassOrder([...new Set(events.map((e) => e[2]))]).filter((l) => !hidden?.has(l));
   const pct = (t: number) => `${Math.max(0, Math.min(100, (t / duration) * 100))}%`;
   const h = compact ? "h-5" : "h-8";
@@ -76,7 +81,7 @@ export default function EventTimeline({ events, duration, time, onSeek, hidden, 
         );
       })}
       <div />
-      <TimeAxis duration={duration} />
+      <TimeAxis duration={duration} offset={offset} />
     </div>
   );
 }

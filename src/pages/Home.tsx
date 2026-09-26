@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import HeroShot from "../components/HeroShot";
 import SampleCard from "../components/SampleCard";
 import { Icon, usePageTitle } from "../components/ui";
@@ -24,6 +24,7 @@ const EXPLORE = [
 
 export default function Home() {
   usePageTitle();
+  const [params] = useSearchParams();
   const content = useJson<Content>("content.json");
   const preds = useJson<Predictions>("predictions_samples.json");
   const samples = useJson<SamplesFile>("samples.json");
@@ -61,7 +62,7 @@ export default function Home() {
             </div>
           </div>
           <div className="rise [animation-delay:120ms]">
-            {first && firstPred && <HeroShot video={first} events={firstPred.events} duration={meta[first]?.duration ?? 340} />}
+            {firstPred && <HeroShot startAt={Number(params.get("t")) || 0} events={preds.data!.videos["C3896.MP4"]?.events ?? firstPred.events} />}
           </div>
         </div>
       </section>
