@@ -23,7 +23,7 @@ export default function Team() {
             <article key={m.name} className="card flex flex-col overflow-hidden">
               <div className="flex flex-1 flex-col p-5 sm:p-6">
                 {m.photo ? (
-                  <img src={asset(m.photo)} alt="" className="mb-4 size-16 rounded-full object-cover" />
+                  <img src={asset(m.photo)} alt={`Photo of ${m.name}`} loading="lazy" className="mb-4 size-20 rounded-2xl border border-line object-cover" />
                 ) : (
                   <div aria-hidden className="mb-4 grid size-16 place-items-center rounded-full bg-panel-2 font-display text-xl font-semibold text-ink-2">
                     {m.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("")}

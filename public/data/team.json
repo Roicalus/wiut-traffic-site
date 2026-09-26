@@ -10,7 +10,8 @@
     "Repository, weights, Dockerfile and README; team coordination"
    ],
    "github": "https://github.com/Roicalus",
-   "linkedin": "https://www.linkedin.com/in/shakhzod-kalandarov-71a9293b9/"
+   "linkedin": "https://www.linkedin.com/in/shakhzod-kalandarov-71a9293b9/",
+   "photo": "media/team/shaxzod.jpg"
   },
   {
    "name": "Aleksandr Polyakov",
@@ -22,7 +23,8 @@
     "Unit tests for alignment, rules and risk; ablations on the sample videos"
    ],
    "github": "https://github.com/justm1x",
-   "linkedin": "https://www.linkedin.com/in/aleksandr-polyakov-07142b43a"
+   "linkedin": "https://www.linkedin.com/in/aleksandr-polyakov-07142b43a",
+   "photo": "media/team/aleksandr.jpg"
   },
   {
    "name": "Yana Semianiuta",
@@ -34,7 +36,8 @@
     "EDA of the sample videos and the technical report"
    ],
    "github": "https://github.com/yanasemianiuta",
-   "linkedin": "https://www.linkedin.com/in/yana-semianiuta"
+   "linkedin": "https://www.linkedin.com/in/yana-semianiuta",
+   "photo": "media/team/yana.jpg"
   }
  ]
 }
