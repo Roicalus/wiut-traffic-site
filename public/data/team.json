@@ -2,25 +2,39 @@
  "members": [
   {
    "name": "Shaxzod Kalandarov",
-   "role": "Captain",
+   "role": "Captain · ML pipeline and Part B",
    "contributions": [
-    "To be added"
+    "Detection and tracking: YOLO11s / YOLO11n with ByteTrack, frame sampling, track stitching",
+    "Part B accident-risk estimator: closest approach, required deceleration, calibration on normal traffic",
+    "Runtime and the submission: reader and detector threads, time guards, determinism, run_submission.py compatibility",
+    "Repository, weights, Dockerfile and README; team coordination"
    ],
-   "github": "https://github.com/Roicalus"
+   "github": "https://github.com/Roicalus",
+   "linkedin": "https://www.linkedin.com/in/shakhzod-kalandarov-71a9293b9/"
   },
   {
    "name": "Aleksandr Polyakov",
-   "role": "To be added",
+   "role": "Scene understanding and event rules",
    "contributions": [
-    "To be added"
-   ]
+    "Scene zones of the junction and their alignment to every recording (CLAHE + SIFT homography, reference bank)",
+    "Traffic-light reader: lit-section classification, occlusion handling, phase smoothing",
+    "Event rules for the six submitted classes and segment post-processing",
+    "Unit tests for alignment, rules and risk; ablations on the sample videos"
+   ],
+   "github": "https://github.com/justm1x",
+   "linkedin": "https://www.linkedin.com/in/aleksandr-polyakov-07142b43a"
   },
   {
    "name": "Yana Semianiuta",
-   "role": "To be added",
+   "role": "Website, live demo and visual analysis",
    "contributions": [
-    "To be added"
-   ]
+    "Team website: design, results pages, dashboard, interactive timelines and charts",
+    "Live demo: Hugging Face Space (Gradio, ZeroGPU with CPU fallback) and its connection to the site",
+    "Annotated video rendering and the site export of samples, heatmaps and trajectories",
+    "EDA of the sample videos and the technical report"
+   ],
+   "github": "https://github.com/yanasemianiuta",
+   "linkedin": "https://www.linkedin.com/in/yana-semianiuta"
   }
  ]
 }
