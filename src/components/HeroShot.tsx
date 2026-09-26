@@ -18,9 +18,9 @@ interface Hero {
 }
 
 /** Last tracker frame at or before t. */
-function frameAt(frames: Hero["frames"], t: number): Box[] {
-  let lo = 0, hi = frames.length - 1;
-  if (hi < 0 || t < frames[0][0]) return [];
+function frameAt(frames: Hero["frames"] | undefined, t: number): Box[] {
+  let lo = 0, hi = (frames?.length ?? 0) - 1;
+  if (!Array.isArray(frames) || hi < 0 || t < frames[0][0]) return [];
   while (lo < hi) {
     const mid = (lo + hi + 1) >> 1;
     if (frames[mid][0] <= t) lo = mid; else hi = mid - 1;
@@ -51,11 +51,12 @@ export default function HeroShot({ events, startAt = 0 }: { events: Event[]; sta
     return () => cancelAnimationFrame(raf);
   }, [hero.data]);
 
-  const h = hero.data;
+  // A stale cached hero.json of an older format has no frames: show nothing rather than crash.
+  const h = hero.data && Array.isArray(hero.data.frames) ? hero.data : undefined;
   const abs = (h?.start ?? 0) + t;
   const boxes = h ? frameAt(h.frames, t) : [];
   const flagged = new Map<number, string>();
-  h?.event_objects.forEach(([s, e, label, id]) => t >= s && t <= e && flagged.set(id, label));
+  h?.event_objects?.forEach(([s, e, label, id]) => t >= s && t <= e && flagged.set(id, label));
   const active = events.filter((e) => abs >= e[0] && abs <= e[1]);
 
   return (

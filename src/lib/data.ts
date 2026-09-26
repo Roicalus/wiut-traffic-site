@@ -12,7 +12,8 @@ const cache = new Map<string, Promise<unknown>>();
 function load<T>(file: string): Promise<T> {
   let p = cache.get(file);
   if (!p) {
-    p = fetch(asset(`data/${file}`)!).then((r) => {
+    // no-cache = revalidate with the server, so code and data never come from different deploys
+    p = fetch(asset(`data/${file}`)!, { cache: "no-cache" }).then((r) => {
       if (!r.ok) throw new Error(`data/${file} could not be loaded (HTTP ${r.status})`);
       return r.json();
     });

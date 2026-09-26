@@ -1,4 +1,5 @@
 import { Link, useSearchParams } from "react-router-dom";
+import ErrorBoundary from "../components/ErrorBoundary";
 import HeroShot from "../components/HeroShot";
 import SampleCard from "../components/SampleCard";
 import { Icon, usePageTitle } from "../components/ui";
@@ -62,7 +63,7 @@ export default function Home() {
             </div>
           </div>
           <div className="rise [animation-delay:120ms]">
-            {firstPred && <HeroShot startAt={Number(params.get("t")) || 0} events={preds.data!.videos["C3896.MP4"]?.events ?? firstPred.events} />}
+            {firstPred && <ErrorBoundary fallback={null}><HeroShot startAt={Number(params.get("t")) || 0} events={preds.data!.videos["C3896.MP4"]?.events ?? firstPred.events} /></ErrorBoundary>}
           </div>
         </div>
       </section>

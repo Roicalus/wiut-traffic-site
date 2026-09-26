@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useJson } from "../lib/data";
 import type { Content } from "../lib/content";
+import ErrorBoundary from "./ErrorBoundary";
 import { Icon, LogoMark } from "./ui";
 
 const NAV = [
@@ -113,6 +114,7 @@ export default function Layout() {
       </header>
 
       <main id="main" className="flex-1">
+        <ErrorBoundary resetKey={pathname}>
         {pathname === "/" ? <Outlet /> : (
           <div className="hero-glow">
           <div className="mx-auto w-full max-w-6xl px-4 pt-12 pb-24 sm:px-6 sm:pt-16">
@@ -120,6 +122,7 @@ export default function Layout() {
           </div>
           </div>
         )}
+        </ErrorBoundary>
       </main>
 
       <footer className="border-t border-line">
