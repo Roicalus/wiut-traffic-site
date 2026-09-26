@@ -1,0 +1,307 @@
+{
+ "team_name": "SoWeNeedAName",
+ "tagline": "Reads a fixed 4K junction camera, reports every traffic event as a time segment with a class, and raises an alarm when two road users are about to collide.",
+ "approach": {
+  "summary": "One pass over the video: a COCO-pretrained YOLO11s detector with ByteTrack tracks vehicles and pedestrians, the traffic light is read from its lit section, and hand-written rules on the trajectories and a hand-drawn scene layout produce the events. The scene layout is mapped to every recording by a homography, because the 'fixed' camera moves between recordings. Part B is a separate causal pass: YOLO11n + ByteTrack and a closest-approach / required-deceleration risk for every pair of road users.",
+  "pipeline": [
+   {
+    "name": "Video",
+    "kind": "io",
+    "detail": "4K H.264 at 29.97 fps, decoded once in a reader thread; every 3rd frame (10 Hz) goes to the detector, the top 18 % (trees, sky) is cropped.",
+    "short": "4K, every 3rd frame"
+   },
+   {
+    "name": "Scene alignment",
+    "kind": "rule",
+    "detail": "CLAHE + SIFT on the static background against day, sunset and dusk reference frames, RANSAC homography, median over three frames of the clip; zones drawn once are mapped to this recording.",
+    "short": "SIFT + homography"
+   },
+   {
+    "name": "Detection + tracking",
+    "kind": "learned",
+    "detail": "YOLO11s (COCO weights, fp16, 1280 px input) finds cars, buses, trucks, motorcycles, bicycles and people; ByteTrack links them into tracks; track fragments are stitched.",
+    "short": "YOLO11s + ByteTrack"
+   },
+   {
+    "name": "Traffic light",
+    "kind": "rule",
+    "detail": "Which of the three sections is lit (not colour counts); frames where a closer vehicle covers the signal are skipped; green to red without yellow must hold 3 s.",
+    "short": "lit-section reader"
+   },
+   {
+    "name": "Event rules",
+    "kind": "rule",
+    "detail": "Per-class rules on tracks, zones and the signal state: congestion, stopped_vehicle, jaywalking, red_light, stop_line, illegal_turn; segments merged and cleaned per class.",
+    "short": "6 classes"
+   },
+   {
+    "name": "Accident risk (Part B)",
+    "kind": "rule",
+    "detail": "Causal: YOLO11n + ByteTrack on every 2nd frame in a worker thread; for every pair, the closest approach and the deceleration still needed to avoid contact; median over 0.6 s.",
+    "short": "YOLO11n, causal, per frame"
+   },
+   {
+    "name": "Output",
+    "kind": "io",
+    "detail": "[[start_sec, end_sec, label], ...] per video and a risk score per frame, in the harness format.",
+    "short": "events + risk JSON"
+   }
+  ],
+  "models": [
+   {
+    "name": "YOLO11s (Ultralytics)",
+    "role": "Part A detector: vehicles and pedestrians, COCO-pretrained, not fine-tuned",
+    "license": "AGPL-3.0",
+    "why": "Accurate enough on far, small objects at 1280 px and fast enough to leave half of the 3× budget; COCO already has every class we need, and without labels for this camera there is nothing to fine-tune on."
+   },
+   {
+    "name": "YOLO11n (Ultralytics)",
+    "role": "Part B detector (lighter, every 2nd frame)",
+    "license": "AGPL-3.0",
+    "why": "Part B runs frame by frame inside the harness; the nano model keeps it cheap while the risk only needs rough positions and speeds."
+   },
+   {
+    "name": "ByteTrack (Ultralytics implementation)",
+    "role": "multi-object tracking in both parts",
+    "license": "MIT (original) / AGPL-3.0",
+    "why": "Keeps low-confidence detections to bridge occlusions (a bus passing a moped) without an appearance model, so it adds almost no time."
+   },
+   {
+    "name": "SIFT (OpenCV)",
+    "role": "features for aligning the scene zones to each recording",
+    "license": "Apache-2.0 (OpenCV)",
+    "why": "Scale- and rotation-invariant; with CLAHE it still finds hundreds of matches at sunset and dusk, where ORB found 16–21."
+   }
+  ],
+  "datasets": [
+   {
+    "name": "COCO 2017",
+    "use": "Pre-training of the YOLO11 weights by Ultralytics (not used by us directly)",
+    "license": "CC BY 4.0"
+   },
+   {
+    "name": "The four sample videos",
+    "use": "Scene zones, thresholds and visual checks; no training",
+    "license": "provided by the organizers"
+   }
+  ],
+  "learned": [
+   "Object detection (YOLO11s / YOLO11n, COCO weights, not fine-tuned)"
+  ],
+  "rule_based": [
+   "Tracking association (ByteTrack) and fragment stitching",
+   "Scene alignment (SIFT + RANSAC homography)",
+   "Traffic-light state",
+   "All event rules and segment post-processing",
+   "The accident-risk score"
+  ],
+  "class_rules": [
+   {
+    "label": "congestion",
+    "rule": "At least 4 cars standing together in the main-road queue that keep standing through 15 s or more of green (a normal red-light queue clears on green), or a dense block of cars standing on the junction for 40 s or more (longer than one signal phase)."
+   },
+   {
+    "label": "stopped_vehicle",
+    "rule": "A vehicle stationary on the carriageway for 10 s or more that is not packed in a queue (2 or more other stopped cars within 1.5 box diagonals for half of its stop) and not waiting at the signal; on the junction itself any lone stop counts."
+   },
+   {
+    "label": "jaywalking",
+    "rule": "A pedestrian's ground point on the carriageway outside the crossings and the pedestrian islands for 1 s or more; people whose box sits inside a vehicle box (riders, passengers) are ignored."
+   },
+   {
+    "label": "red_light",
+    "rule": "A vehicle enters the stop-line zone on red and reaches the far crossing while the signal is still red."
+   },
+   {
+    "label": "stop_line",
+    "rule": "A vehicle stops past the stop line on red without entering the junction; the segment ends when the signal turns green; not reported for vehicles that then run the red."
+   },
+   {
+    "label": "illegal_turn",
+    "rule": "The forbidden route of this junction: from the main-road queue deep into the junction, a U-shaped turn at the apex and out through the lower end of the near crossing within 3 s."
+   }
+  ],
+  "runtime": "On the four sample videos (RTX 5050 laptop, 8 CPU cores): 1.6-1.8x the video duration for Part A + Part B together, 52-62 % of the 3x budget. Decoding 4K dominates; the detector is cheap. Time guards raise the frame stride if a slower machine would miss the budget, instead of losing the whole video.",
+  "rules_why": "There are no labels for this camera, so every event is an explicit rule on tracks, zones and the signal state. Each rule can be checked by watching the rendered video, and each threshold is stated on this page."
+ },
+ "report": {
+  "built": "A detector + tracker + rules system for one fixed junction camera. Everything that depends on the scene (zones, the traffic light, the forbidden turn) is drawn once and mapped to every recording by a homography, so camera shifts between recordings do not break it. Six classes are submitted; eight more have rules but stay off until they can be checked, because a predicted class that is absent from the test set costs F1 = 0. Part B is a causal pairwise collision-risk score calibrated to almost never alarm on normal traffic. A live demo runs the same code on uploaded clips.",
+  "worked": [
+   "Aligning the scene by homography with a bank of day, sunset and dusk references: 60/60 synthetic camera shifts within 1 px, including tilts that a shift + rotation model missed by up to 262 px.",
+   "Reading the traffic light by which section is lit, with occlusion handling: unknown dropped from 36-100 % to 0-2 % of frames in the day clips.",
+   "Required deceleration instead of plain time-to-collision for the risk: risk of 0.5 or more on 57–71 % of frames with the first version, on no frame in the submitted run.",
+   "Letting ByteTrack see low-confidence detections (conf 0.1): median track length 7.5 s to 9.7 s.",
+   "Overlapping decoding with inference in both parts: 2.2x to 1.6-1.8x of the video duration."
+  ],
+  "did_not_work": [
+   "Distances in image space for Part B: on the far side of the junction perspective squeezes normal gaps, so close following in slow traffic scores up to 0.498, just under the alarm line.",
+   "'Any turn inside a polygon' for illegal_turn: it flagged legal manoeuvres around trucks and missed the real U-turns, which happen below the polygon and turn by more than 150 degrees.",
+   "A plain '4 cars standing' congestion rule: every red phase became congestion.",
+   "The samples contain no accidents, so the recall of Part B is only verified on synthetic scenarios.",
+   "Our own labels of the samples are not finished, so there is no dev-set F1 yet; thresholds were set by watching the rendered videos."
+  ],
+  "next": [
+   "Finish labelling the samples and tune thresholds per class against evaluate.py.",
+   "Project tracks to the ground plane with the homography to get metric distances and speeds for Part B and the rules.",
+   "Validate the experimental classes (wrong_way, failure_to_yield, solid_line_crossing, accident, near_miss) and switch on the ones that pass.",
+   "Fine-tune the detector on this camera view (far, small objects; scooters)."
+  ]
+ },
+ "ablations": [
+  {
+   "title": "Scene alignment under synthetic camera shifts",
+   "note": "Real frames of the four samples with synthetic shifts, rotations, zooms, tilts, occlusion, blur, noise and lighting changes. Error = worst corner of the zones light_roi, stop_line and both crossings.",
+   "columns": [
+    "Variant",
+    "Aligned",
+    "Max error, px"
+   ],
+   "rows": [
+    [
+     "SIFT + CLAHE, similarity, strict plausibility (8 % / 3 deg / 5 %)",
+     "60 / 432",
+     "5.6"
+    ],
+    [
+     "Same, relaxed plausibility",
+     "432 / 432",
+     "6.2 (camera tilt 2-8 %: 49-262)"
+    ],
+    [
+     "Homography + reference bank, own reference removed (submitted)",
+     "60 / 60",
+     "1.0"
+    ]
+   ]
+  },
+  {
+   "title": "Traffic-light reading in the day clips",
+   "note": "Share of frames where the signal state is unknown.",
+   "columns": [
+    "Variant",
+    "C3896",
+    "C3897"
+   ],
+   "rows": [
+    [
+     "Absolute brightness threshold 150",
+     "36 %",
+     "100 %"
+    ],
+    [
+     "Lit section 35 levels brighter than the others, floor 40 (submitted)",
+     "2 %",
+     "0 %"
+    ]
+   ]
+  },
+  {
+   "title": "Part B calibration on normal traffic",
+   "note": "Four sample videos, 18 min, no accidents: every alarm is a false alarm. Rows 1–4: tools/risk_replay.py on cached detections; last row: the harness run that wrote predictions_samples.json.",
+   "columns": [
+    "Variant",
+    "Frames with risk >= 0.5",
+    "Alarms"
+   ],
+   "rows": [
+    [
+     "Closest approach at constant velocity",
+     "57-71 %",
+     "dozens per video"
+    ],
+    [
+     "+ required deceleration, ground points",
+     "0.6 %",
+     28
+    ],
+    [
+     "+ median over 0.6 s",
+     "0.1 %",
+     4
+    ],
+    [
+     "+ boxes cut by the frame border ignored",
+     "0.1 %",
+     2
+    ],
+    [
+     "Submitted code, harness run (submitted)",
+     "0 % (peak 0.498)",
+     0
+    ]
+   ]
+  },
+  {
+   "title": "Tracker input threshold",
+   "note": "First 40 s of C3896.",
+   "columns": [
+    "Detector conf",
+    "Tracks",
+    "Median track length",
+    "Courier moped covered"
+   ],
+   "rows": [
+    [
+     "0.35",
+     99,
+     "7.5 s",
+     "43 / 80 frames"
+    ],
+    [
+     "0.1 (submitted; ByteTrack filters itself)",
+     94,
+     "9.7 s",
+     "61 / 80 frames"
+    ]
+   ]
+  },
+  {
+   "title": "Runtime per video (Part A + Part B, harness)",
+   "note": "Fraction of the video duration; the limit is 3x.",
+   "columns": [
+    "Variant",
+    "C3896",
+    "C3905"
+   ],
+   "rows": [
+    [
+     "Sequential decode and inference",
+     "2.23x",
+     "2.17x"
+    ],
+    [
+     "Reader thread (A) + detector worker thread (B)",
+     "1.79x",
+     "1.74x"
+    ],
+    [
+     "+ rules only for submitted classes (submitted)",
+     "1.58-1.74x",
+     "1.6-1.7x"
+    ]
+   ]
+  }
+ ],
+ "links": [
+  {
+   "label": "Repository",
+   "url": "https://github.com/Roicalus/wiut-traffic-events",
+   "description": "Code, weights, predictions_samples.json; the submitted tag is listed in the README."
+  },
+  {
+   "label": "Live demo (Hugging Face Space)",
+   "url": "https://huggingface.co/spaces/Roicaluste/wiut-traffic-events",
+   "description": "The same code on uploaded clips; GPU when available, CPU fallback."
+  },
+  {
+   "label": "Weights",
+   "url": "https://github.com/Roicalus/wiut-traffic-events/tree/main/weights",
+   "description": "YOLO11s and YOLO11n (Ultralytics, AGPL-3.0) in the repository; download.sh checks sha256."
+  },
+  {
+   "label": "predictions_samples.json",
+   "url": "https://github.com/Roicalus/wiut-traffic-events/blob/main/predictions_samples.json",
+   "description": "Our output on the four sample videos."
+  }
+ ]
+}
