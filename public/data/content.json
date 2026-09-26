@@ -135,6 +135,7 @@
   ],
   "did_not_work": [
    "Distances in image space for Part B: on the far side of the junction perspective squeezes normal gaps, so close following in slow traffic scores up to 0.498, just under the alarm line.",
+   "Motorcycles and mopeds: the COCO-trained YOLO11 often misses them on this camera, especially far away or next to cars and buses, so their boxes flicker or vanish for a few frames. The track then breaks, and a red-light or illegal-turn run by a two-wheeler can be missed. Lowering the tracker threshold to conf 0.1 helped (one courier moped: 43 → 61 of 80 frames covered) but did not solve it.",
    "'Any turn inside a polygon' for illegal_turn: it flagged legal manoeuvres around trucks and missed the real U-turns, which happen below the polygon and turn by more than 150 degrees.",
    "A plain '4 cars standing' congestion rule: every red phase became congestion.",
    "The samples contain no accidents, so the recall of Part B is only verified on synthetic scenarios.",
@@ -144,7 +145,7 @@
    "Finish labelling the samples and tune thresholds per class against evaluate.py.",
    "Project tracks to the ground plane with the homography to get metric distances and speeds for Part B and the rules.",
    "Validate the experimental classes (wrong_way, failure_to_yield, solid_line_crossing, accident, near_miss) and switch on the ones that pass.",
-   "Fine-tune the detector on this camera view (far, small objects; scooters)."
+   "Fine-tune the detector on this camera view (far, small objects; motorcycles, mopeds and scooters, which YOLO11 misses most)."
   ]
  },
  "ablations": [
