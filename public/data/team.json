@@ -36,7 +36,30 @@
    ],
    "github": "https://github.com/justm1x",
    "linkedin": "https://www.linkedin.com/in/aleksandr-polyakov-07142b43a",
-   "photo": "media/team/aleksandr.jpg"
+   "photo": "media/team/aleksandr.jpg",
+   "portfolio": "https://justm1x.github.io/",
+   "projects": [
+    {
+     "name": "Veterinary Practice Management System (C++ / Qt)",
+     "url": "https://github.com/mirkhanov/OOPCPPProject",
+     "description": "Desktop clinic system in C++17 and Qt 6: clients, animals, visits, services, inventory and hospitalization. OOP with inheritance, polymorphism and templates, file storage, exception handling, Factory Method and Facade patterns, unit tests."
+    },
+    {
+     "name": "Stress Relief App (UI/UX, Figma)",
+     "url": "https://www.figma.com/design/2Ehfw13sc93SgmitOzBsFM/Stress-Relief-App?node-id=0-1",
+     "description": "Mobile app prototype that helps students manage stress with quick activities: breathing exercises, rest timers and task checklists, with a calm, accessible interface."
+    },
+    {
+     "name": "Artisanal Coffee Ordering App (UI/UX, Figma)",
+     "url": "https://www.figma.com/design/l6cMtIaAslMadgvQSeLVYw/Untitled?node-id=0-1",
+     "description": "Ordering app for a coffee shop: browsing and customising drinks, placing and tracking orders, team orders, notifications, and edge cases such as supply interruptions and lost connection."
+    },
+    {
+     "name": "Personal portfolio website",
+     "url": "https://github.com/justm1x/justm1x.github.io",
+     "description": "Responsive HTML/CSS site with projects, skills and personal information (live at justm1x.github.io)."
+    }
+   ]
   },
   {
    "name": "Yana Semianiuta",
