@@ -74,7 +74,7 @@ export default function Home() {
             [videos.length || 4, "Sample videos", "4K at 29.97 fps"],
             [minutes ? `${minutes.toFixed(1)} min` : "–", "Footage analysed", "day, sunset, dusk"],
             [all.length || "–", "Events detected", "6 classes submitted"],
-            ["1.6–1.8×", "Runtime", "of video length, limit 3×"],
+            ["1.4–1.9×", "Runtime", "of video length, limit 3×"],
           ].map(([v, k, h]) => (
             <div key={k as string} className="flex flex-col-reverse gap-1 p-5 sm:p-6">
               <dt className="text-sm text-ink-2">{k} <span className="block text-xs text-ink-3">{h}</span></dt>

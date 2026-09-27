@@ -121,7 +121,7 @@
     "rule": "The forbidden route of this junction: from the main-road queue deep into the junction, a U-shaped turn at the apex and out through the lower end of the near crossing within 3 s."
    }
   ],
-  "runtime": "On the four sample videos (RTX 5050 laptop, 8 CPU cores): 1.6-1.8x the video duration for Part A + Part B together, 52-62 % of the 3x budget. Decoding 4K dominates; the detector is cheap. Time guards raise the frame stride if a slower machine would miss the budget, instead of losing the whole video.",
+  "runtime": "On the four sample videos (RTX 5050 laptop, 8 CPU cores): 1.4-1.9x the video duration for Part A + Part B together, 46-63 % of the 3x budget; the spread comes from load on the machine, not from the clips. Decoding 4K dominates; the detector is cheap. Time guards raise the frame stride if a slower machine would miss the budget, instead of losing the whole video.",
   "rules_why": "There are no labels for this camera, so every event is an explicit rule on tracks, zones and the signal state. Each rule can be checked by watching the rendered video, and each threshold is stated on this page."
  },
  "report": {
@@ -131,12 +131,15 @@
    "Reading the traffic light by which section is lit, with occlusion handling: unknown dropped from 36-100 % to 0-2 % of frames in the day clips.",
    "Required deceleration instead of plain time-to-collision for the risk: risk of 0.5 or more on 57-71 % of frames with the first version, one alarm of 0.5 s in 18 min in the submitted run.",
    "Letting ByteTrack see low-confidence detections (conf 0.1): median track length 7.5 s to 9.7 s.",
-   "Overlapping decoding with inference in both parts: 2.2x to 1.6-1.8x of the video duration.",
-   "Pairing only vehicles at a similar depth: two cars whose boxes differ in size by more than 2.2x are metres apart on the ground; this removed the 'near car heads for a car far down the road' false alarm."
+   "Overlapping decoding with inference in both parts: 2.2x to 1.4-1.9x of the video duration.",
+   "Pairing only vehicles at a similar depth: two cars whose boxes differ in size by more than 2.2x are metres apart on the ground; this removed the 'near car heads for a car far down the road' false alarm.",
+   "stop_line by the task definition: a stop on red anywhere past the line (the band before the zebra or the zebra itself, in the lanes of the queue); vehicles that waited there and left on green are no longer counted as red_light.",
+   "Splitting tracks that switch between person and vehicle (ByteTrack hands a pedestrian's id to the car that covers it) and treating fast, squat 'people' on the road as scooter riders whose scooter the detector missed: 8 false jaywalking events removed on the samples.",
+   "Cropping only the strip above the scene zones (4 % instead of 18 %): the far lanes and the bus stop are analysed now; six stops at the far kerb that were invisible before are detected, at no measurable runtime cost."
   ],
   "did_not_work": [
-   "Part B is too cautious: on synthetic crashes it raises the alarm for 40 % of them and only ~0.1 s before contact, and it misses rear-end crashes at city speed. Every looser variant we tried catches more crashes (up to 93 %) but also fires 15-43 times on 18 minutes of normal traffic, because in image space a dense queue looks like a crash; with accidents rare, those false alarms cost more alarm-F1 than the extra hits bring. The samples contain no accidents, so recall is only measured on synthetic scenarios.",
-   "Distances in image space for Part B: perspective squeezes gaps, so a pedestrian on an island next to a passing car looks like a contact (the one false alarm on the samples), and close following in slow traffic scores up to 0.45.",
+   "Part B is too cautious: on synthetic crashes it raises the alarm for 40 % of them and only ~0.1 s before contact, and it misses rear-end crashes at city speed. Every looser variant we tried catches more crashes (up to 93 %) but also fires 15-43 times on 18 minutes of normal traffic (measured before the depth check below), because in image space a dense queue looks like a crash; with accidents rare, those false alarms cost more alarm-F1 than the extra hits bring. The samples contain no accidents, so recall is only measured on synthetic scenarios.",
+   "Distances in image space for Part B: perspective squeezes gaps, so a pedestrian on an island next to a passing car looks like a contact (the one false alarm on the samples), and close following in slow traffic scores up to 0.48.",
    "Motorcycles and mopeds: the COCO-trained YOLO11 often misses them on this camera, especially far away or next to cars and buses, so their boxes flicker or vanish for a few frames. The track then breaks, and a red-light or illegal-turn run by a two-wheeler can be missed. Lowering the tracker threshold to conf 0.1 helped (one courier moped: 43 → 61 of 80 frames covered) but did not solve it.",
    "'Any turn inside a polygon' for illegal_turn: it flagged legal manoeuvres around trucks and missed the real U-turns, which happen below the polygon and turn by more than 150 degrees.",
    "A plain '4 cars standing' congestion rule: every red phase became congestion.",
@@ -235,7 +238,7 @@
   },
   {
    "title": "Part B on synthetic crashes vs false alarms on real traffic",
-   "note": "tools/risk_scenarios.py: 15 crash scenarios (rear-end, T-bone, pedestrian, motorcycle, late braking; 1-3 car lengths/s) and 9 safe ones, box jitter 3 px and 10 % missed detections, 3-5 noise seeds each; alarm = score >= 0.5 starting in [s - 10, s) as in evaluate.py. False alarms: the same scorer on the detections of the four sample videos (18 min, no accidents).",
+   "note": "tools/risk_scenarios.py: 15 crash scenarios (rear-end, T-bone, pedestrian, motorcycle, late braking; 1-3 car lengths/s) and 9 safe ones, box jitter 3 px and 10 % missed detections, 3-5 noise seeds each; alarm = score >= 0.5 starting in [s - 10, s) as in evaluate.py. False alarms: the same scorer on the detections of the four sample videos (18 min, no accidents). Rows other than the submitted one were measured before the depth check and the 4 % crop.",
    "columns": [
     "Variant",
     "Crashes alarmed",
@@ -314,7 +317,7 @@
   },
   {
    "title": "Runtime per video (Part A + Part B, harness)",
-   "note": "Fraction of the video duration; the limit is 3x.",
+   "note": "Fraction of the video duration; the limit is 3x. Last clean-clone run; runs vary by ~0.2x with machine load.",
    "columns": [
     "Variant",
     "C3896",
@@ -332,9 +335,9 @@
      "1.74x"
     ],
     [
-     "+ rules only for submitted classes (submitted)",
-     "1.58-1.74x",
-     "1.6-1.7x"
+     "+ rules only for submitted classes; 4 % crop (submitted)",
+     "1.67x",
+     "1.38x"
     ]
    ]
   }
