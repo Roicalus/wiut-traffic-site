@@ -144,6 +144,39 @@ interface SpaceFile {
   path?: string;
 }
 
+/**
+ * Upload straight to the Space's Gradio upload endpoint with XHR, which (unlike the Gradio client)
+ * reports progress: a 2-minute 4K clip from this camera is ~2 GB and takes minutes to send.
+ * Resolves to the server-side path of the file.
+ */
+function uploadWithProgress(url: string, file: File, onProgress: (loaded: number) => void, signal: AbortSignal): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.upload.onprogress = (e) => onProgress(e.loaded);
+    xhr.onload = () => {
+      if (xhr.status < 200 || xhr.status >= 300) return reject(new Error(`upload failed (HTTP ${xhr.status})`));
+      try {
+        const paths = JSON.parse(xhr.responseText);
+        if (typeof paths?.[0] === "string") return resolve(paths[0]);
+      } catch {
+        /* fall through */
+      }
+      reject(new Error("unexpected upload response"));
+    };
+    xhr.onerror = () => reject(new Error("upload failed"));
+    signal.addEventListener("abort", () => {
+      xhr.abort();
+      reject(new DOMException("Aborted", "AbortError"));
+    });
+    const form = new FormData();
+    form.append("files", file, file.name);
+    xhr.send(form);
+  });
+}
+
+const mb = (bytes: number) => (bytes / 1048576).toFixed(0);
+
 async function runSpaceJob(file: File, onProgress: (p: Progress) => void, signal: AbortSignal): Promise<DemoResult> {
   onProgress({ phase: "uploading", progress: 0, stage: "Connecting to the model server" });
   let app: Client;
@@ -152,8 +185,23 @@ async function runSpaceJob(file: File, onProgress: (p: Progress) => void, signal
   } catch {
     throw new Error("The demo server could not be reached. It may be starting up; try again in a minute.");
   }
-  onProgress({ phase: "uploading", progress: 0.5, stage: "Uploading the video" });
-  const job = app.submit("/run", { video: { video: handle_file(file), subtitles: null } });
+  // Own upload with progress; if the endpoint differs, fall back to the client's upload.
+  let videoInput: unknown = handle_file(file);
+  const cfg = app.config as { root?: string; api_prefix?: string } | undefined;
+  if (cfg?.root) {
+    const url = `${cfg.root.replace(/\/$/, "")}${cfg.api_prefix ?? "/gradio_api"}/upload?upload_id=${Math.random().toString(36).slice(2)}`;
+    try {
+      const path = await uploadWithProgress(url, file, (loaded) => onProgress({
+        phase: "uploading", progress: Math.min(1, loaded / file.size), stage: `Uploading ${mb(loaded)} of ${mb(file.size)} MB`,
+      }), signal);
+      videoInput = { path, orig_name: file.name, size: file.size, mime_type: file.type || "video/mp4", meta: { _type: "gradio.FileData" } };
+    } catch (e) {
+      if ((e as Error).name === "AbortError") throw e;
+      console.warn("[demo] direct upload failed, using the Gradio client upload:", e);
+    }
+  }
+  onProgress({ phase: "uploading", progress: 1, stage: "Sending the job to the model server" });
+  const job = app.submit("/run", { video: { video: videoInput, subtitles: null } });
   signal.addEventListener("abort", () => job.cancel());
 
   let output: unknown[] | null = null;

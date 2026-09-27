@@ -44,7 +44,7 @@ export default function Results() {
       </Section>
 
       {!!samples.data?.class_examples?.length && (
-        <Section id="examples" title="One example of each class we detect" lede="Short clips cut from the annotated videos; the event box is drawn in the class colour. stop_line is submitted too but does not occur in the samples, so it has no example.">
+        <Section id="examples" title="One example of each class we detect" lede="Short clips cut from the annotated videos; the event box is drawn in the class colour.">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {samples.data.class_examples.map((ex, i) => (
               <article key={i} className="card overflow-hidden">

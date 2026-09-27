@@ -7,8 +7,8 @@
    "height": 2160,
    "lighting": "day, direct sun",
    "annotated_video": "media/annotated/C3896.mp4",
-   "notes": "Camera vs. the reference view: shift -4.8×0.4 px, rotation 0.01°, zoom 1.0002 (homography, reference 'main'). Signal cycle read from the video: red 36.0 s, green 36.1 s, yellow 2.9 s. Events: congestion 2, illegal_turn 2, jaywalking 8, red_light 1, stopped_vehicle 5.",
-   "poster": "media/posters/C3896.jpg"
+   "poster": "media/posters/C3896.jpg",
+   "notes": "Camera vs. the reference view: shift -4.8×0.4 px, rotation 0.01°, zoom 1.0002 (homography, reference 'main'). Signal cycle read from the video: red 36.0 s, green 36.1 s, yellow 2.9 s. Events: congestion 2, illegal_turn 2, jaywalking 11, red_light 1, stopped_vehicle 3."
   },
   "C3897.MP4": {
    "duration": 317.82,
@@ -17,8 +17,8 @@
    "height": 2160,
    "lighting": "day, direct sun",
    "annotated_video": "media/annotated/C3897.mp4",
-   "notes": "Camera vs. the reference view: shift -4.3×0.2 px, rotation 0.0°, zoom 1.0001 (homography, reference 'main'). Signal cycle read from the video: red 36.0 s, green 36.0 s, yellow 3.0 s. Events: congestion 2, jaywalking 13, stopped_vehicle 4.",
-   "poster": "media/posters/C3897.jpg"
+   "poster": "media/posters/C3897.jpg",
+   "notes": "Camera vs. the reference view: shift -4.3×0.2 px, rotation 0.0°, zoom 1.0001 (homography, reference 'main'). Signal cycle read from the video: red 36.0 s, green 36.0 s, yellow 3.0 s. Events: congestion 2, jaywalking 12, stopped_vehicle 4."
   },
   "C3902.MP4": {
    "duration": 317.82,
@@ -27,8 +27,8 @@
    "height": 2160,
    "lighting": "sunset",
    "annotated_video": "media/annotated/C3902.mp4",
-   "notes": "Camera vs. the reference view: shift -86.0×57.8 px, rotation -1.0°, zoom 1.011 (homography, reference 'sunset'). Signal cycle read from the video: red 38.9 s, green 38.0 s, yellow 3.0 s. Events: jaywalking 17, red_light 1, stopped_vehicle 1.",
-   "poster": "media/posters/C3902.jpg"
+   "poster": "media/posters/C3902.jpg",
+   "notes": "Camera vs. the reference view: shift -86.0×57.8 px, rotation -1.0°, zoom 1.011 (homography, reference 'sunset'). Signal cycle read from the video: red 38.9 s, green 38.0 s, yellow 3.0 s. Events: jaywalking 17, stop_line 1, stopped_vehicle 1."
   },
   "C3905.MP4": {
    "duration": 127.63,
@@ -37,8 +37,8 @@
    "height": 2160,
    "lighting": "dusk, headlights on",
    "annotated_video": "media/annotated/C3905.mp4",
-   "notes": "Camera vs. the reference view: shift 7.7×19.4 px, rotation -1.22°, zoom 1.0131 (homography, reference 'dusk'). Signal cycle read from the video: red 39.0 s, green 37.9 s, yellow 3.0 s. Events: jaywalking 5, stopped_vehicle 1.",
-   "poster": "media/posters/C3905.jpg"
+   "poster": "media/posters/C3905.jpg",
+   "notes": "Camera vs. the reference view: shift 7.7×19.4 px, rotation -1.22°, zoom 1.0131 (homography, reference 'dusk'). Signal cycle read from the video: red 39.0 s, green 37.9 s, yellow 3.0 s. Events: jaywalking 4, stop_line 1, stopped_vehicle 1."
   }
  },
  "class_examples": [
@@ -48,26 +48,26 @@
    "start": 49.65,
    "end": 54.65,
    "media": "media/examples/illegal_turn.mp4",
-   "caption": "A car from the main road drives deep into the junction and makes a U-shaped turn back onto the lower street: the forbidden route (the allowed right turn is right after the far crossing).",
-   "poster": "media/posters/ex_illegal_turn.jpg"
+   "poster": "media/posters/ex_illegal_turn.jpg",
+   "caption": "A car from the main road drives deep into the junction and makes a U-shaped turn back onto the lower street: the forbidden route (the allowed right turn is right after the far crossing)."
   },
   {
    "label": "red_light",
    "video": "C3896.MP4",
-   "start": 78.98,
+   "start": 78.88,
    "end": 80.08,
    "media": "media/examples/red_light.mp4",
-   "caption": "A vehicle crosses the stop line while the signal for its approach is red.",
-   "poster": "media/posters/ex_red_light.jpg"
+   "poster": "media/posters/ex_red_light.jpg",
+   "caption": "A vehicle crosses the stop line while the signal for its approach is red."
   },
   {
    "label": "stopped_vehicle",
    "video": "C3896.MP4",
-   "start": 143.94,
-   "end": 155.66,
+   "start": 144.84,
+   "end": 329.13,
    "media": "media/examples/stopped_vehicle.mp4",
-   "caption": "A lone car stands on the junction for more than 10 s, not packed in a queue: stopping on the junction is an event even if the car leaves with the next green phase.",
-   "poster": "media/posters/ex_stopped_vehicle.jpg"
+   "poster": "media/posters/ex_stopped_vehicle.jpg",
+   "caption": "A lone car stands on the junction for more than 10 s, not packed in a queue: stopping on the junction is an event even if the car leaves with the next green phase."
   },
   {
    "label": "congestion",
@@ -75,34 +75,51 @@
    "start": 38.94,
    "end": 108.11,
    "media": "media/examples/congestion.mp4",
-   "caption": "The junction jams: a dense block of cars stands for longer than one signal phase. An ordinary red-light queue is not congestion; it clears on green.",
-   "poster": "media/posters/ex_congestion.jpg"
+   "poster": "media/posters/ex_congestion.jpg",
+   "caption": "The junction jams: a dense block of cars stands for longer than one signal phase. An ordinary red-light queue is not congestion; it clears on green."
   },
   {
    "label": "jaywalking",
    "video": "C3897.MP4",
-   "start": 142.34,
-   "end": 154.35,
+   "start": 142.54,
+   "end": 148.25,
    "media": "media/examples/jaywalking.mp4",
-   "caption": "Pedestrians leave the zebra and cut across the asphalt towards the near crossing.",
-   "poster": "media/posters/ex_jaywalking.jpg"
+   "poster": "media/posters/ex_jaywalking.jpg",
+   "caption": "Pedestrians leave the zebra and cut across the asphalt towards the near crossing."
+  },
+  {
+   "label": "stop_line",
+   "video": "C3905.MP4",
+   "start": 77.68,
+   "end": 114.61,
+   "media": "media/examples/stop_line.mp4",
+   "poster": "media/posters/ex_stop_line.jpg",
+   "caption": "At dusk a car stops on red past the stop line, its front on the far zebra, and waits there for the green instead of behind the line."
   }
  ],
  "failures": [
+  {
+   "title": "False alarm: pedestrian on the island",
+   "video": "C3902.MP4",
+   "start": 30.6,
+   "end": 38.6,
+   "media": "media/failures/failure_1.jpg",
+   "explanation": "Part B raises a 0.5 s alarm (risk 0.52), the only one on the samples, for a pedestrian standing on the traffic island while a car passes. Distances are measured in image space, and perspective squeezes the gap between the island and the lane."
+  },
   {
    "title": "Close following read as a near conflict",
    "video": "C3897.MP4",
    "start": 180.1,
    "end": 188.1,
-   "media": "media/failures/failure_1.jpg",
-   "explanation": "Two cars in the far lane, one closing in on the other in slow traffic. The submitted risk curve peaks at 0.498 here, a hair below the 0.5 alarm line, although nothing dangerous happens. Distances are measured in image space: on the far side of the junction perspective squeezes a normal following gap into a few pixels. A ground-plane (bird's-eye) projection with metric gaps is the fix we would try."
+   "media": "media/failures/failure_2.jpg",
+   "explanation": "Two cars in the far lane, one closing in on the other in slow traffic. The risk curve peaks at 0.45 here, below the 0.5 alarm line but the highest value of the clip, although nothing dangerous happens. Distances are measured in image space: on the far side of the junction perspective squeezes a normal following gap into a few pixels. A ground-plane (bird's-eye) projection with metric gaps is the fix we would try."
   },
   {
    "title": "Jaywalking or a desire line?",
    "video": "C3897.MP4",
    "start": 147.0,
    "end": 155.0,
-   "media": "media/failures/failure_2.jpg",
+   "media": "media/failures/failure_3.jpg",
    "explanation": "Almost every pedestrian phase, people step off the far zebra and cut diagonally across the asphalt to the near crossing. By the definition it is jaywalking and we report it; if the annotators treat this habitual path as normal, these events are false positives."
   },
   {
@@ -110,7 +127,7 @@
    "video": "C3902.MP4",
    "start": 117.0,
    "end": 125.0,
-   "media": "media/failures/failure_3.jpg",
+   "media": "media/failures/failure_4.jpg",
    "explanation": "A car with hazard lights stands for minutes near the bus stop. Same-class events that overlap must be merged into one segment, so this stop swallows the shorter stops around it and the video gets one long stopped_vehicle segment instead of several short ones."
   }
  ]

@@ -7,7 +7,7 @@
    {
     "name": "Video",
     "kind": "io",
-    "detail": "4K H.264 at 29.97 fps, decoded once in a reader thread; every 3rd frame (10 Hz) goes to the detector, the top 18 % (trees, sky) is cropped.",
+    "detail": "4K H.264 at 29.97 fps, decoded once in a reader thread; every 3rd frame (10 Hz) goes to the detector, only the strip above the scene zones (top 4 %, trees) is cropped.",
     "short": "4K, every 3rd frame"
    },
    {
@@ -110,11 +110,11 @@
    },
    {
     "label": "red_light",
-    "rule": "A vehicle enters the stop-line zone on red and reaches the far crossing while the signal is still red."
+    "rule": "A vehicle enters the stop-line zone on red and reaches the far crossing while the signal is still red; a vehicle that stops past the line and drives on only when it turns green is stop_line instead."
    },
    {
     "label": "stop_line",
-    "rule": "A vehicle stops past the stop line on red without entering the junction; the segment ends when the signal turns green; not reported for vehicles that then run the red."
+    "rule": "A vehicle stops for 1.5 s or more on red past the stop line: on the band before the far zebra or on the zebra itself, within the lanes of the main-road queue. The segment ends when the signal turns green. Not reported for vehicles that then enter the junction on red (those are red_light)."
    },
    {
     "label": "illegal_turn",
@@ -129,21 +129,22 @@
   "worked": [
    "Aligning the scene by homography with a bank of day, sunset and dusk references: 60/60 synthetic camera shifts within 1 px, including tilts that a shift + rotation model missed by up to 262 px.",
    "Reading the traffic light by which section is lit, with occlusion handling: unknown dropped from 36-100 % to 0-2 % of frames in the day clips.",
-   "Required deceleration instead of plain time-to-collision for the risk: risk of 0.5 or more on 57–71 % of frames with the first version, on no frame in the submitted run.",
+   "Required deceleration instead of plain time-to-collision for the risk: risk of 0.5 or more on 57-71 % of frames with the first version, one alarm of 0.5 s in 18 min in the submitted run.",
    "Letting ByteTrack see low-confidence detections (conf 0.1): median track length 7.5 s to 9.7 s.",
-   "Overlapping decoding with inference in both parts: 2.2x to 1.6-1.8x of the video duration."
+   "Overlapping decoding with inference in both parts: 2.2x to 1.6-1.8x of the video duration.",
+   "Pairing only vehicles at a similar depth: two cars whose boxes differ in size by more than 2.2x are metres apart on the ground; this removed the 'near car heads for a car far down the road' false alarm."
   ],
   "did_not_work": [
-   "Distances in image space for Part B: on the far side of the junction perspective squeezes normal gaps, so close following in slow traffic scores up to 0.498, just under the alarm line.",
+   "Part B is too cautious: on synthetic crashes it raises the alarm for 40 % of them and only ~0.1 s before contact, and it misses rear-end crashes at city speed. Every looser variant we tried catches more crashes (up to 93 %) but also fires 15-43 times on 18 minutes of normal traffic, because in image space a dense queue looks like a crash; with accidents rare, those false alarms cost more alarm-F1 than the extra hits bring. The samples contain no accidents, so recall is only measured on synthetic scenarios.",
+   "Distances in image space for Part B: perspective squeezes gaps, so a pedestrian on an island next to a passing car looks like a contact (the one false alarm on the samples), and close following in slow traffic scores up to 0.45.",
    "Motorcycles and mopeds: the COCO-trained YOLO11 often misses them on this camera, especially far away or next to cars and buses, so their boxes flicker or vanish for a few frames. The track then breaks, and a red-light or illegal-turn run by a two-wheeler can be missed. Lowering the tracker threshold to conf 0.1 helped (one courier moped: 43 → 61 of 80 frames covered) but did not solve it.",
    "'Any turn inside a polygon' for illegal_turn: it flagged legal manoeuvres around trucks and missed the real U-turns, which happen below the polygon and turn by more than 150 degrees.",
    "A plain '4 cars standing' congestion rule: every red phase became congestion.",
-   "The samples contain no accidents, so the recall of Part B is only verified on synthetic scenarios.",
    "Our own labels of the samples are not finished, so there is no dev-set F1 yet; thresholds were set by watching the rendered videos."
   ],
   "next": [
    "Finish labelling the samples and tune thresholds per class against evaluate.py.",
-   "Project tracks to the ground plane with the homography to get metric distances and speeds for Part B and the rules.",
+   "Project tracks to the ground plane: metric gaps and speeds would separate a queue from a crash, which image-space distances cannot (see the Part B ablation). We tried a single-view calibration from this frame (vanishing points of lane lines and of the stop line and zebra) and it does not hold: the road is not straight and the junction is skewed, the lane-line vanishing point moves by hundreds of pixels between line subsets and the orthogonality constraint has no solution. It needs 4-6 surveyed points on the asphalt (tape measure or a cadastral map).",
    "Validate the experimental classes (wrong_way, failure_to_yield, solid_line_crossing, accident, near_miss) and switch on the ones that pass.",
    "Fine-tune the detector on this camera view (far, small objects; motorcycles, mopeds and scooters, which YOLO11 misses most)."
   ]
@@ -227,8 +228,63 @@
     ],
     [
      "Submitted code, harness run (submitted)",
-     "0 % (peak 0.498)",
-     0
+     "0.05 %",
+     1
+    ]
+   ]
+  },
+  {
+   "title": "Part B on synthetic crashes vs false alarms on real traffic",
+   "note": "tools/risk_scenarios.py: 15 crash scenarios (rear-end, T-bone, pedestrian, motorcycle, late braking; 1-3 car lengths/s) and 9 safe ones, box jitter 3 px and 10 % missed detections, 3-5 noise seeds each; alarm = score >= 0.5 starting in [s - 10, s) as in evaluate.py. False alarms: the same scorer on the detections of the four sample videos (18 min, no accidents).",
+   "columns": [
+    "Variant",
+    "Crashes alarmed",
+    "Mean warning time",
+    "False alarms, synthetic",
+    "False alarms, real 18 min"
+   ],
+   "rows": [
+    [
+     "Current thresholds (submitted)",
+     "40 %",
+     "0.11 s",
+     0,
+     1
+    ],
+    [
+     "Required deceleration from 0.5 instead of 1 car length/s^2",
+     "51 %",
+     "0.16 s",
+     0,
+     3
+    ],
+    [
+     "Alarm deceleration 2 instead of 3 car lengths/s^2",
+     "60 %",
+     "0.22 s",
+     0,
+     15
+    ],
+    [
+     "Contact gap 0.6 instead of 0.3 car lengths",
+     "62 %",
+     "0.18 s",
+     0,
+     17
+    ],
+    [
+     "Contact gap from box sizes along the approach direction",
+     "78-84 %",
+     "0.23-0.30 s",
+     0,
+     "28-33"
+    ],
+    [
+     "Contact gap 0.9, deceleration 0.5-2",
+     "93 %",
+     "0.44 s",
+     0,
+     43
     ]
    ]
   },
