@@ -49,7 +49,19 @@
    ],
    "github": "https://github.com/yanasemianiuta",
    "linkedin": "https://www.linkedin.com/in/yana-semianiuta",
-   "photo": "media/team/yana.jpg"
+   "photo": "media/team/yana.jpg",
+   "projects": [
+    {
+     "name": "Mare Cognitum: student life app (Figma prototype)",
+     "url": "https://www.figma.com/design/WZe8RxovkJ8exmfU6dYCu4/Final-prototype?node-id=0-1&p=f&t=VHNdXkBcYU5O6HTP-0",
+     "description": "UI/UX university project: a mobile app that brings timetables, deadlines, grades and assignments into one dashboard. Led the whole process: user research, user flows, wireframes, prototyping and usability testing, iterating on user feedback. Skills: UX research, user flows, wireframing, UI design, prototyping, usability testing."
+    },
+    {
+     "name": "Mare Cognitum: research and user flows (FigJam)",
+     "url": "https://www.figma.com/board/wZo4ZDt0jsvAEneEqLUsVs/Untitled?node-id=0-1&p=f&t=68E465gWDwXC1V5J-0",
+     "description": "The research board behind the app: user research, user flows and the iterations from usability testing."
+    }
+   ]
   }
  ]
 }
