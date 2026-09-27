@@ -11,7 +11,19 @@
    ],
    "github": "https://github.com/Roicalus",
    "linkedin": "https://www.linkedin.com/in/shakhzod-kalandarov-71a9293b9/",
-   "photo": "media/team/shaxzod.jpg"
+   "photo": "media/team/shaxzod.jpg",
+   "projects": [
+    {
+     "name": "eClass IUT",
+     "url": "https://github.com/Roicalus/eClass_IUT_By_tobaskAplus",
+     "description": "Flutter + Firebase app for university classes: attendance with Google Sheets export, groups, lessons and students management, office hours with chat and Google Meet calls, PIN and biometric sign-in."
+    },
+    {
+     "name": "Nailo (Kate)",
+     "url": "https://github.com/Roicalus/Nailo-Kate-",
+     "description": "Voice assistant for Windows in C++: offline speech recognition (Vosk), speech synthesis (Piper), LLM command dispatcher (Ollama, OpenAI-compatible APIs, Gemini), system control and a Firebase remote panel; ImGui + DirectX 11 overlay."
+    }
+   ]
   },
   {
    "name": "Aleksandr Polyakov",
